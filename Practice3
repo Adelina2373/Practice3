@@ -1,0 +1,290 @@
+#include "Prctice.h"
+#include <iostream>
+#include <thread>
+#include <iomanip>
+
+using namespace std;
+
+void print(int**, int, bool = 1);
+
+void clear(int**, int);
+
+void spiral(int**, int);
+
+void snake(int**, int);
+
+void modify(int**, int, char);
+
+void sort(int**, int);
+
+void increase(int**, int, int);
+
+
+void practice3() {
+    setlocale(0, "");
+    int snachala;
+    while (true) {
+        srand(time(0));
+        int N;
+        cout << "Введите размерность матрицы : 6, 8 or 10:" << "\n";
+        cin >> N;
+        while (N != 6 && N != 8 && N != 10) {
+            cout << "Размерность не подхолит, попробуйте ещё раз" << "\n";
+            cin >> N;
+        }
+        int** matrix = new int* [N];
+        for (int** new_m = matrix, **end = new_m + N - 1; new_m <= end; new_m++)
+            *new_m = new int[N];
+        string Type;
+        cout << "Выберете способ заполнения (a-спиралью or b-змейкой):" << endl;
+        cin >> Type;
+        while (Type != "a" && Type != "b") {
+            cout << "Не подхолит, попробуйте ещё раз(a, b)" << endl;
+            cin >> Type;
+        }
+        clear(matrix, N);
+        if (Type == "a") {
+            spiral(matrix, N);
+        }
+        else snake(matrix, N);
+
+        string rotation;
+        cout << "Выберите способ модификации матрицы(a, b, c, d):" << endl;
+        cin >> Type;
+        while (Type != "a" && Type != "b" && Type != "c" && Type != "d") {
+            cout << "Не подхолит, попробуйте ещё раз(a, b, c, d)" << endl;
+            cin >> Type;
+        }
+        cout << "Модифицированная матрица: " << '\n';
+        modify(matrix, N, Type[0]);
+        cout << '\n' << "Отсортированная матрица: " << '\n';
+        sort(matrix, N);
+        cout << '\n' << "Введите величину, на которую увеличиться значение элементов матрицы: ";
+        int k;
+        cin >> k;
+        increase(matrix, N, k);
+
+        cout << "\n\nХотите продолжить? Если Да, введите: '0'" << endl;
+        cin >> snachala;
+        if (snachala != 0)
+            break;
+    }
+}
+
+
+void print(int** matrix, int N, bool clear) {
+    if (clear)
+        system("cls");
+    for (int** curi = matrix, **endi = curi + N - 1; curi <= endi; curi++) {
+        for (int* curj = *curi, *endj = curj + N - 1; curj <= endj; curj++) {
+            cout << setw(3) << *curj;
+            if (curj != endj) 
+                cout << " ";
+        }
+        cout << "\n";
+    }
+    std::this_thread::sleep_for(0.1s);
+}
+
+void clear(int** matrix, int N) {
+    for (int** curi = matrix, **endi = curi + N - 1; curi <= endi; curi++)
+        for (int* curj = *curi, *endj = curj + N - 1; curj <= endj; curj++) 
+            *curj = 0;
+}
+
+void spiral(int** matrix, int N) {
+    print(matrix, N);
+    int lineNum = 0;
+    for (int j = 0; j < N / 2; ++j) {
+        for (int* cur_m_i = *(matrix + lineNum) + lineNum, *end_m_i = cur_m_i + N - 2 * lineNum; cur_m_i < end_m_i; cur_m_i++) {
+            *cur_m_i = rand() % N * N + 1;
+            print(matrix, N);
+        }
+        for (int** cur_m_i = matrix + lineNum + 1, **endi = matrix + N - 2 - lineNum; cur_m_i <= endi; cur_m_i++) {
+            *(*cur_m_i + N - lineNum - 1) = rand() % N * N + 1;
+            print(matrix, N);
+        }
+        for (int* curi = *(matrix + N - lineNum - 1) + N - lineNum - 1, *endi = curi - N + 1 + 2 * lineNum; curi > endi; curi--) {
+            *curi = rand() % N * N + 1;
+            print(matrix, N);
+        }
+        for (int** curi = matrix + N - 1 - lineNum, **endi = matrix + lineNum + 1; curi >= endi; curi--) {
+            *(*curi + lineNum) = rand() % N * N + 1;
+            print(matrix, N);
+        }
+        lineNum++;
+    }
+}
+
+void snake(int** matrix, int N) {
+    print(matrix, N);
+    for (int lineNum = 0; lineNum < N / 2; ++lineNum) {
+        for (int** curi = matrix, **endi = matrix + N - 1; curi <= endi; curi++) {
+            *(*curi + lineNum * 2) = rand() % N * N + 1;
+            print(matrix, N);
+        }
+        for (int** curi = matrix + N - 1, **endi = matrix; curi >= endi; curi--) {
+            *(*curi + lineNum * 2 + 1) = rand() % N * N + 1;
+            print(matrix, N);
+        }
+    }
+}
+
+void modify(int** matrix, int N, char option) {
+    int** a = new int* [N / 2], ** b = new int* [N / 2], ** c = new int* [N / 2], ** d = new int* [N / 2], *** arr = new int** [4];
+    arr[0] = a; arr[1] = b; arr[2] = c; arr[3] = d;
+    for (int*** i = arr, ***iEnd = arr + 3; i <= iEnd; i++)
+        for (int** cur = *i, **end = cur + N / 2 - 1; cur <= end; cur++) *cur = new int[N / 2];
+
+    for (int** curi = matrix, **endi = curi + N / 2 - 1, **curArray = a; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curArrayJ = *curj;
+
+    for (int** curi = matrix, **endi = curi + N / 2 - 1, **curArray = b; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi + N / 2, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curArrayJ = *curj;
+
+    for (int** curi = matrix + N / 2, **endi = curi + N / 2 - 1, **curArray = c; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curArrayJ = *curj;
+
+    for (int** curi = matrix + N / 2, **endi = curi + N / 2 - 1, **curArray = d; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi + N / 2, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curArrayJ = *curj;
+
+    int** pa, ** pb, ** pc, ** pd;
+    if (option == 'a') {
+        pa = c; pb = a; pc = d; pd = b;
+    }
+    else if (option == 'b') {
+        pa = d; pb = c; pc = b; pd = a;
+    }
+    else if (option == 'c') {
+        pa = c; pb = d; pc = a; pd = b;
+    }
+    else pa = b; pb = a; pc = d; pd = c;
+    for (int** curi = matrix, **endi = curi + N / 2 - 1, **curArray = pa; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curj = *curArrayJ;
+
+    for (int** curi = matrix, **endi = curi + N / 2 - 1, **curArray = pb; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi + N / 2, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curj = *curArrayJ;
+
+    for (int** curi = matrix + N / 2, **endi = curi + N / 2 - 1, **curArray = pc; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curj = *curArrayJ;
+
+    for (int** curi = matrix + N / 2, **endi = curi + N / 2 - 1, **curArray = pd; curi <= endi; curi++, curArray++)
+        for (int* curj = *curi + N / 2, *endj = curj + N / 2 - 1, *curArrayJ = *curArray; curj <= endj; curj++, curArrayJ++)
+            *curj = *curArrayJ;
+
+    print(matrix, N, 0);
+}
+
+void sort(int** matrix, int N) {
+    int* arr = new int[N * N];
+    int i = 0;
+    int index = 0;
+    int end = (N * N) - 1, begin = 0;
+
+    int mid, swap;
+    int f = begin;
+    int l = end;
+    mid = arr[(f + l) / 2];
+    while (f < l)
+    {
+        while (arr[f] < mid) f++;
+        while (arr[l] > mid) l--;
+        if (f <= l)
+        {
+            swap = arr[f];
+            arr[f] = arr[l];
+            arr[l] = swap;
+            f++;
+            l--;
+        }
+    }
+    if (begin < l) {
+        int i = 0;
+        int index = 0;
+        int end = (N * N) - 1, begin = 0;
+
+        int mid, swap;
+        int f = begin;
+        int l = end;
+        mid = arr[(f + l) / 2];
+        while (f < l)
+        {
+            while (arr[f] < mid) f++;
+            while (arr[l] > mid) l--;
+            if (f <= l)
+            {
+                swap = arr[f];
+                arr[f] = arr[l];
+                arr[l] = swap;
+                f++;
+                l--;
+            }
+        }
+    }
+
+    if (f < end) {
+        int i = 0;
+        int index = 0;
+        int end = (N * N) - 1, begin = 0;
+
+        int mid, swap;
+        int f = begin;
+        int l = end;
+        mid = arr[(f + l) / 2];
+        while (f < l)
+        {
+            while (arr[f] < mid) f++;
+            while (arr[l] > mid) l--;
+            if (f <= l)
+            {
+                swap = arr[f];
+                arr[f] = arr[l];
+                arr[l] = swap;
+                f++;
+                l--;
+            }
+        }
+    }
+
+
+    for (int** curi = matrix, **endi = curi + N - 1; curi <= endi; curi++) {
+        for (int* curj = *curi, *endj = curj + N - 1; curj <= endj; curj++) {
+            *(arr + i) = *curj;
+            i++;
+        }
+    }
+    bool isChanged = 1;
+    while (isChanged) {
+        isChanged = 0;
+        for (int* j = arr, *jEnd = j + (N * N) - 2; j <= jEnd; j++) {
+            if (*j > *(j + 1)) {
+                isChanged = 1;
+                int t = *(j + 1);
+                *(j + 1) = *j;
+                *j = t;
+            }
+        }
+    }
+
+    i = 0;
+    for (int** curi = matrix, **endi = curi + N - 1; curi <= endi; curi++) {
+        for (int* curj = *curi, *endj = curj + N - 1; curj <= endj; curj++) {
+            *curj = *(arr + i);
+            i++;
+        }
+    }
+    print(matrix, N, 0);
+}
+
+void increase(int** matrix, int N, int k) {
+    for (int** curi = matrix, **endi = curi + N - 1; curi <= endi; curi++)
+        for (int* curj = *curi, *endj = curj + N - 1; curj <= endj; curj++) *curj += k;
+    print(matrix, N, 0);
+}
